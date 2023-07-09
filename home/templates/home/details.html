@@ -1,0 +1,456 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="page-wrapper">
+    <main class="main">
+        <nav aria-label="breadcrumb" class="breadcrumb-nav border-0 mb-0">
+            <div class="container d-flex align-items-center">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                    <li class="breadcrumb-item"><a href="#">Products</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">With Sidebar</li>
+                </ol>
+
+                <nav class="product-pager ml-auto" aria-label="Product">
+                    <a class="product-pager-link product-pager-prev" href="#" aria-label="Previous" tabindex="-1">
+                        <i class="icon-angle-left"></i>
+                        <span>Prev</span>
+                    </a>
+
+                    <a class="product-pager-link product-pager-next" href="#" aria-label="Next" tabindex="-1">
+                        <span>Next</span>
+                        <i class="icon-angle-right"></i>
+                    </a>
+                </nav><!-- End .pager-nav -->
+            </div><!-- End .container -->
+        </nav><!-- End .breadcrumb-nav -->
+
+        <div class="page-content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-9">
+                        <div class="product-details-top">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="product-gallery">
+                                        <figure class="product-main-image">
+                                            <span class="product-label label-top">Top</span>
+                                            <img id="product-zoom" src="{{ products.image.url }}"
+                                                 data-zoom-image="{{ products.image.url }}" alt="product image">
+
+                                            <a href="#" id="btn-product-gallery" class="btn-product-gallery">
+                                                <i class="icon-arrows"></i>
+                                            </a>
+                                        </figure><!-- End .product-main-image -->
+
+                                        <div id="product-zoom-gallery" class="product-image-gallery">
+                                            {% for product in products.img_product.all %}
+                                                <a class="product-gallery-item active" href="#"
+                                                   data-image="{{ product.image.url }}"
+                                                   data-zoom-image="{{ product.image.url }}">
+                                                    <img src="{{ product.image.url }}" alt="product side">
+                                                </a>
+                                            {% endfor %}
+
+                                        </div><!-- End .product-image-gallery -->
+                                    </div><!-- End .product-gallery -->
+                                </div><!-- End .col-md-6 -->
+
+                                <div class="col-md-6">
+                                    <div class="product-details product-details-sidebar">
+                                        <h1 class="product-title">{{ products.name }}</h1>
+                                        <!-- End .product-title -->
+
+                                        <div class="ratings-container">
+                                            <div class="ratings">
+                                            <span class="good"><i
+                                                    class="fa fa-star"></i>&nbsp{{ products.average }}</span>
+                                            </div><!-- End .ratings -->
+                                            <a class="ratings-text" href="#product-review-link"
+                                               id="review-link">( {{ products.num_comments }}
+                                                Reviews )</a>
+                                        </div><!-- End .rating-container -->
+
+                                        <div class="product-price">
+                                            {{ variants.total_price }}
+                                        </div><!-- End .product-price -->
+
+
+
+
+
+                                        {% if products.status == 'Both' %}
+                                            <div class="details-filter-row details-row-size">
+                                                <form method="POST">
+                                                    {% csrf_token %}
+                                                    <label>size:</label>
+                                                    {% for rs in size %}
+                                                        <input
+                                                                name="select" class="radio-size"
+                                                                type="radio"
+                                                                value="{{ rs.id }}"
+                                                                {% if  variants.id == rs.id %}
+                                                                checked{% endif %}
+                                                                onchange="this.form.submit();">
+                                                        <span>
+                                                                     {{ rs.size.name }}
+                                                                </span>
+                                                    {% endfor %}
+
+                                                </form>
+                                            </div>
+                                            <div class="details-filter-row details-row-size">
+
+                                                <form method="post" action=".">
+                                                    {% csrf_token %}
+                                                    <h6 class="colors" style="">color:
+                                                        {% for rs in colors %}
+                                                            <input
+                                                                    name="select" class="radio-size"
+                                                                    type="radio"
+                                                                    value="{{ rs.id }}"
+                                                                    {% if  variants.id == rs.id %}
+                                                                    checked{% endif %}
+                                                                    onchange="this.form.submit();">
+                                                            <span>
+                                                                     {{ rs.color.name }}
+                                                                </span>
+                                                        {% endfor %}
+                                                    </h6>
+
+                                                </form>
+                                            </div>
+
+                                        {% elif products.status == 'Color' %}
+                                            <form action="" id="select-color" method="post">
+                                                {% csrf_token %}
+                                                <span class="text-uppercase">color: </span>
+                                                {% for data in colors %}
+                                                    <input class="radio-size" type="radio"
+                                                           value="{{ data.id }}"
+                                                            {% if variants.id == data.id %}
+                                                           checked{% endif %}
+                                                           name="select" onchange="this.form.submit();">
+                                                    {{ data.color }}
+                                                {% endfor %}
+                                            </form>
+                                        {% elif products.status == 'Size' %}
+                                            <form action="" method="post">
+                                                {% csrf_token %}
+                                                <span class="text-uppercase">size: </span>
+                                                {% for data in size %}
+
+                                                    <input class="radio-size" type="radio"
+                                                           value="{{ data.id }}"
+                                                            {% if variants.id == data.id %}
+                                                           checked {% endif %}
+                                                           name="select" onchange="this.form.submit();">
+                                                    {{ data.size }}
+
+                                                {% endfor %}
+                                            </form>
+                                        {% endif %}
+
+
+
+                                        <div class="product-details-action">
+                                            <form action="{% url 'cart:add' %}" method="post">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="test" value="{{ variants.id }}">
+                                                <input type="number" value="1" name="quantity">
+                                                <button type="submit" class="btn btn-danger"> add
+                                                </button>
+                                            </form>
+
+                                            <!-- favourite java -->
+                                            <script>
+                                                $(document).on("click", ".favourite-product", function (t) {
+                                                    t.preventDefault();
+                                                    var e = $(this).attr("data-id"), s = $(this),
+                                                        a = $(this).data("id"), t = $(this).data("text"),
+                                                        o = $.trim(t);
+                                                    console.log(a + " " + t), $.ajax({
+                                                        url: $(this).attr("href"),
+                                                        type: "GET",
+                                                        data: {product: e},
+                                                        success: function (t) {
+                                                            "افزودن به لیست علاقه مندی" === o ? (s.find("i").css({color: "red"}), s.data("text", "حذف از لیست علاقه مندی")) : (s.find("i").css({color: "#eee"}), s.data("text", "افزودن به لیست علاقه مندی"))
+                                                        },
+                                                        error: function (t) {
+                                                            window.location.href = "/accounts/login/"
+                                                        }
+                                                    })
+                                                })
+                                            </script>
+                                            <!-- favourite java -->
+
+                                            <div class="details-action-wrapper">
+
+                                                        {% if products in wishlist.products.all %}
+                                                        <a rel="nofollow"
+                                                           href="{% url 'home:favourite_list' products.id %}"
+                                                           class="favourite-product like-btn{{ products.id }}"
+                                                           data-id='{{ products.id }}'
+                                                           data-text="حذف از لیست علاقه مندی"
+                                                           data-toggle="tooltip" data-placement="top">
+                                                            <i class="fa fa-heart test{{ products.id }}"
+                                                               style="color:red"></i>
+                                                            حذف از لیست علاقه مندی
+                                                        </a>
+                                                    {% else %}
+                                                        <a rel="nofollow"
+                                                           href="{% url 'home:favourite_list' products.id %}"
+                                                           class="favourite-product like-btn{{ products.id }}"
+                                                           data-id='{{ products.id }}'
+                                                           data-text="افزودن به لیست علاقه مندی"
+                                                           data-toggle="tooltip" data-placement="top">
+                                                            <i class="fa fa-heart test{{ products.id }}"
+                                                               style="color:revert;"></i>
+                                                            افزودن به لیست علاقه مندی
+                                                        </a>
+                                                    {% endif %}
+
+                                            </div><!-- End .details-action-wrapper -->
+                                        </div><!-- End .product-details-action -->
+
+                                    </div><!-- End .product-details -->
+                                </div><!-- End .col-md-6 -->
+                            </div><!-- End .row -->
+                        </div><!-- End .product-details-top -->
+
+                        <div class="product-details-tab">
+                            <ul class="nav nav-pills justify-content-center" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="product-desc-link" data-toggle="tab"
+                                       href="#product-desc-tab" role="tab" aria-controls="product-desc-tab"
+                                       aria-selected="true">Description</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="product-info-link" data-toggle="tab"
+                                       href="#product-info-tab" role="tab" aria-controls="product-info-tab"
+                                       aria-selected="false">Add Comment</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="product-shipping-link" data-toggle="tab"
+                                       href="#product-shipping-tab" role="tab"
+                                       aria-controls="product-shipping-tab"
+                                       aria-selected="false">change price</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" id="product-review-link" data-toggle="tab"
+                                       href="#product-review-tab" role="tab"
+                                       aria-controls="product-review-tab"
+                                       aria-selected="false">Reviews ({{ products.num_comments }})</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="product-desc-tab" role="tabpanel"
+                                     aria-labelledby="product-desc-link">
+                                    <div class="product-desc-content">
+                                        <p>{{ products.information|safe }}</p>
+                                    </div><!-- End .product-desc-content -->
+                                </div><!-- .End .tab-pane -->
+                                <div class="tab-pane fade" id="product-info-tab" role="tabpanel"
+                                     aria-labelledby="product-info-link">
+                                    <div class="product-desc-content">
+                                        <h3>Information</h3>
+
+                                        <form class="comment-form" method="post"
+                                              action="{% url 'home:comment' products.id %}">
+                                            {% csrf_token %}
+                                            <div class="form-group row">
+                                                <div class="col">
+                                                    <label class="col-form-label"><span
+                                                            class="text-danger">*</span>
+                                                        نظر شما</label>
+                                                    <textarea name="comment" class="form-control"
+                                                              required></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <div class="col">
+                                                    <label class="col-form-label"><span
+                                                            class="text-danger">*</span>
+                                                        امتیاز</label>
+                                                    &nbsp;&nbsp;&nbsp; بد&nbsp;
+                                                    <input type="radio" value="1" name="rate">
+                                                    &nbsp;
+                                                    <input type="radio" value="2" name="rate">
+                                                    &nbsp;
+                                                    <input type="radio" value="3" name="rate">
+                                                    &nbsp;
+                                                    <input type="radio" value="4" name="rate">
+                                                    &nbsp;
+                                                    <input type="radio" value="5" name="rate" checked>
+                                                    &nbsp;عالی
+                                                </div>
+                                            </div>
+                                            <div class="buttons">
+                                                <button class="sqr-btn" type="submit">ثبت نظر</button>
+                                            </div>
+                                        </form>
+                                    </div><!-- End .product-desc-content -->
+                                </div><!-- .End .tab-pane -->
+                                <div class="tab-pane fade" id="product-shipping-tab" role="tabpanel"
+                                     aria-labelledby="product-shipping-link">
+                                    <div class="product-desc-content">
+                                        <h3>change price</h3>
+                                        <canvas id="myChart" width="100" height="100"></canvas>
+                                        <script>
+                                            var ctx = document.getElementById('myChart').getContext('2d');
+                                            var myChart = new Chart(ctx, {
+                                                type: 'bar',
+                                                data: {
+                                                    labels: [
+                                                        {% for i in change %} {% if variants.id == i.variant_id %} '{{ i.update }}'  {% endif %} ,{% endfor %}],
+                                                    datasets: [{
+                                                        label: '# of Votes',
+                                                        data: [
+                                                            {% for i in change %} {% if variants.id == i.variant_id %} {{ i.unit_price }}  {% endif %} ,{% endfor %}],
+                                                        backgroundColor: [
+                                                            {% for i in change %} '{{ i.color }}' ,{% endfor %}
+
+                                                        ],
+                                                        borderColor: [
+                                                            'rgba(255, 99, 132, 1)',
+                                                            'rgba(54, 162, 235, 1)',
+                                                            'rgba(255, 206, 86, 1)',
+                                                            'rgba(75, 192, 192, 1)',
+                                                            'rgba(153, 102, 255, 1)',
+                                                            'rgba(255, 159, 64, 1)'
+                                                        ],
+                                                        borderWidth: 1
+                                                    }]
+                                                },
+                                                options: {
+                                                    scales: {
+                                                        yAxes: [{
+                                                            ticks: {
+                                                                beginAtZero: true
+                                                            }
+                                                        }]
+                                                    }
+                                                }
+                                            });
+                                        </script>
+
+                                    </div><!-- End .product-desc-content -->
+                                </div><!-- .End .tab-pane -->
+                                <div class="tab-pane fade" id="product-review-tab" role="tabpanel"
+                                     aria-labelledby="product-review-link">
+                                    <div class="reviews">
+                                        <div class="review">
+                                            {% for com in comments %}
+                                                <div class="row no-gutters">
+                                                    <div class="col-auto">
+                                                        <h4><a href="#">{{ com.user.f_name }}</a></h4>
+                                                        <div class="ratings-container">
+                                                            <div class="ratings">
+                                                                <div class="ratings-val"
+                                                                     style="width: 80%;"></div>
+                                                                <!-- End .ratings-val -->
+                                                            </div><!-- End .ratings -->
+                                                        </div><!-- End .rating-container -->
+                                                        <span class="review-date">{{ com.create | date:"d-m-Y" }}</span>
+                                                    </div><!-- End .col -->
+                                                    <div class="col">
+                                                        <h4>
+                                                            <div class="ratings">
+                                                                <span class="good" style="color: #ffc107;">
+                                                                <i class="fa fa-star{% if com.rate < 1 %}-o empty {% endif %}"></i>
+                                                                <i class="fa fa-star{% if com.rate < 2 %}-o empty {% endif %}"></i>
+                                                                <i class="fa fa-star{% if com.rate < 3 %}-o empty {% endif %}"></i>
+                                                                <i class="fa fa-star{% if com.rate < 4 %}-o empty {% endif %}"></i>
+                                                                <i class="fa fa-star{% if com.rate < 5 %}-o empty {% endif %}"></i>
+                                                                </span>
+                                                            </div>
+                                                        </h4>
+
+                                                        <div class="review-content">
+                                                            <p>{{ com.comment }}</p>
+                                                        </div><!-- End .review-content -->
+                                                    </div><!-- End .col-auto -->
+
+                                                </div><!-- End .row -->
+                                                <div class="reply-show" style="padding:10px;">
+                                                    {% for data in com.comment_reply.all %}
+                                                        <div class="bg-dark text-white p-3">
+                                                            <span class="username text-white">{{ data.user.email }}</span><br>
+                                                            <p class="text-white">{{ data.comment }}</p>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                                <div class="reply">
+                                                    <form class="reply-form" method="post"
+                                                          action="{% url 'home:product_reply' products.id com.id %}">
+                                                        {% csrf_token %}
+                                                        <textarea name="comment" id="reply"
+                                                                  placeholder="پاسخ به نظر ..."
+                                                                  class="form-control"
+                                                                  rows="4" required></textarea>
+                                                        <div class="mt-2">
+                                                            <button type="submit" class="btn btn-info">ارسال
+                                                                پاسخ
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            {% endfor %}
+                                        </div><!-- End .review -->
+
+
+                                    </div><!-- End .reviews -->
+                                </div><!-- .End .tab-pane -->
+                            </div><!-- End .tab-content -->
+                        </div><!-- End .product-details-tab -->
+
+                    </div><!-- End .col-lg-9 -->
+
+                    <aside class="col-lg-3">
+                        <div class="sidebar sidebar-product">
+                            <div class="widget widget-products">
+                                <h4 class="widget-title">Related Product</h4><!-- End .widget-title -->
+
+                                <div class="products">
+                                    {% for i in related_products %}
+                                        <div class="product product-sm">
+                                            <figure class="product-media">
+                                                <a href="product.html">
+                                                    <img src="{{ i.image.url }}" alt="Product image"
+                                                         class="product-image">
+                                                </a>
+                                            </figure>
+
+                                            <div class="product-body">
+                                                <h5 class="product-title"><a
+                                                        href="{% url 'home:details' i.id %}">{{ i.name }}</a>
+                                                </h5><!-- End .product-title -->
+                                                <div class="product-price">
+                                                    <span class="new-price">{{ products.total_price }}</span>
+
+                                                </div><!-- End .product-price -->
+                                            </div><!-- End .product-body -->
+                                        </div><!-- End .product product-sm -->
+                                    {% endfor %}
+                                </div><!-- End .products -->
+
+                            </div><!-- End .widget widget-products -->
+
+                            <div class="widget widget-banner-sidebar">
+                                <div class="banner-sidebar-title">ad box 280 x 280</div>
+                                <!-- End .ad-title -->
+
+                                <div class="banner-sidebar banner-overlay">
+                                    <a href="#">
+                                        <img src="/static/assets/images/blog/sidebar/banner.jpg" alt="banner">
+                                    </a>
+                                </div><!-- End .banner-ad -->
+                            </div><!-- End .widget -->
+                        </div><!-- End .sidebar sidebar-product -->
+                    </aside><!-- End .col-lg-3 -->
+                </div><!-- End .row -->
+
+            </div><!-- End .container -->
+        </div><!-- End .page-content -->
+    </main><!-- End .main -->
+</div>
+{% endblock %}
